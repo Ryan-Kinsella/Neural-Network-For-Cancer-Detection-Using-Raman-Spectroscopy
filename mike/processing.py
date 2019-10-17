@@ -1,6 +1,6 @@
 #cmd
-#           C:\python27\python.exe C:\Users\mikem\Documents\Queen's\Senior\498\Neural-Network-For-Cancer-Detection-Using-Raman-Spectroscopy\mike\processing.py
-
+#    C:\python27\python.exe processing.py
+# cd C:\Users\mikem\Documents\Queen's\Senior\498\Neural-Network-For-Cancer-Detection-Using-Raman-Spectroscopy\mike\
 
 #mike - oct 6/19
 
@@ -9,8 +9,10 @@
 #this uses the github dataset
 
 import csv, random
+import matplotlib.pyplot as plt
 
 vals = []
+maxvals = []
 
 
 def importData():
@@ -28,6 +30,11 @@ def importData():
             vals.append(curr)
     #this is important for formatting
     vals[0][0] = vals[0][0][3:]
+    #have to get in floats cause really small numbers break it
+    for i in range(0, len(vals)):
+        for j in range(0, len(vals[0])-1):
+            if float(vals[i][j])< 0.01:
+                vals[i][j] = float(vals[i][j])
     #process
     for i in range (len(vals)):
         temp = vals[i][1367]
@@ -39,16 +46,40 @@ def importData():
         else:
             vals[i][1367] = 1
     #scramble so same stuff isn't all together
-    random.shuffle(vals)
+    #random.shuffle(vals)
+    for i in range(len(vals)):
+        maxvals.append(max(vals[i]))
+    
+    tsum = 0
+    for i in range(0,237):
+        tsum += float(maxvals[i])
+    print(float(tsum/237), ' - cancer') #slightly higher - 0.732
+    tsum = 0 
+    for i in range(237, len(maxvals)):
+        tsum += float(maxvals[i])
+    print(float(tsum/88),' - non') #slightly lower - 0.726
+
+
+
 def printData():
     global vals
     #printing label
     for i in range(len(vals)):
-        print vals[i][1367]
+        print (maxvals[i], ' - ' , vals[i][1367])
 
+def draw():
+    #this plots stuff. big spike around 1k
+    global vals
+    temparray = []
+    for j in range(235,236):    
+        for i in range(0,1366):
+            temparray.append(float(vals[j][i]))
+            plt.plot(temparray)
+    
+    plt.show()
 
 #mainline
 print ('run')
 importData()
-printData()
+draw()
 print ('done')
