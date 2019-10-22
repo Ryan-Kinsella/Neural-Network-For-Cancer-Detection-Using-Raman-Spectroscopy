@@ -11,9 +11,11 @@ Source 3: pandas.DataFrame documentation, https://pandas.pydata.org/pandas-docs/
 Source 4: Tensorflow Feature Columns, https://www.tensorflow.org/tutorials/structured_data/feature_columns
 Source 5: Tensorflow DNNClassifier, https://www.tensorflow.org/api_docs/python/tf/estimator/DNNClassifier
 Source 6: https://towardsdatascience.com/getting-data-into-tensorflow-estimator-models-3432f404a8da
-"""
+Source 7: Someone can use sns.countplot and sns.heatmap as shown in this article to see correlations,
+    https://medium.com/datadriveninvestor/tensorflow-dnnclassifier-4e68df3df00
 
-"""
+
+
 Notes:
 Terminology:
     Targets: cancer vs not cancer, the last feature column with High-grade tumor, Low-grade
@@ -39,14 +41,15 @@ Ryan - The Github csv file does not contain an initial row creating the labels f
 # Setup
 ###############################################################################################################
 import math
-from IPython import display
+from IPython import display # unused
 from matplotlib import cm
 from matplotlib import gridspec
 from matplotlib import pyplot as plt
 import numpy as np
 import pandas as pd
-from sklearn import metrics
+from sklearn import metrics # unused
 import tensorflow as tf
+import seaborn as sns # unused
 
 from tensorflow.python.data import Dataset
 tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
@@ -203,7 +206,7 @@ validation_targets = preprocess_targets(dataframe.tail(81))
 
 # Source 5,
 # Using the ProximalAdagradOptimizer optimizer with regularization. Can play around with diff options.
-estimator = tf.compat.v2.estimator.DNNClassifier(
+model = tf.compat.v2.estimator.DNNClassifier(
     feature_columns=construct_feature_columns(training_features),
     # Using rule of thumb for hidden layers, square root of the features. We should play around with the testing of this.
     hidden_units=[37, 6], # The format is hidden_units = [numberOfNodesInFirstLayer, numberOfNodesInSecondLayer, etc.]
@@ -216,7 +219,7 @@ estimator = tf.compat.v2.estimator.DNNClassifier(
 # Format in which the estimator evaluates the performance of the model.
 batch_size = 5
 #estimator.train(input_fn=input_fn_train_and_eval(features = training_features, targets= training_targets,batch_size=batch_size,shuffle=True,num_epochs=None))
-estimator.train(input_fn=input_fn_train(training_features, 'High-grade tumor-1')) # High-grade tumor-1 is the string label for class
+model.train(input_fn=lambda : input_fn_train(training_features, 'High-grade tumor-1')) # High-grade tumor-1 is the string label for class
 #metrics = estimator.evaluate(input_fn=input_fn_train_and_eval(         ))
 #predictions = estimator.predict(input_fn=input_fn_predict)
 
