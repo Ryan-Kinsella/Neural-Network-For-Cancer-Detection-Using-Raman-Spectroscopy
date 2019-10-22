@@ -14,7 +14,6 @@ import matplotlib.pyplot as plt
 vals = []
 maxvals = []
 
-
 def importData():
     size = 1368
     #1367 is the label
