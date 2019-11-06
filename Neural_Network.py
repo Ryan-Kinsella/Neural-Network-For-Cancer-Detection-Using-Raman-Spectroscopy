@@ -223,8 +223,6 @@ model.train(input_fn=lambda : input_fn_train(training_features, 'High-grade tumo
 #metrics = estimator.evaluate(input_fn=input_fn_train_and_eval(         ))
 #predictions = estimator.predict(input_fn=input_fn_predict)
 
-
-
 """
   Removed the binary T/F indicators for classification in the csv file. 
   For isolating classification information at the end of the DataFrame, you can check using the following:
