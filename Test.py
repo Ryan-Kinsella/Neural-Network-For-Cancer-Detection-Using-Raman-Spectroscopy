@@ -36,6 +36,7 @@ Ryan - The Github csv file does not contain an initial row creating the labels f
 # Source 1 can be used to understand pre-processing the features and targets
 
 import math # unused
+import time
 from IPython import display # unused
 import matplotlib.pyplot as plt # unused
 import numpy as np # unused
@@ -103,19 +104,58 @@ feature_columns=construct_feature_columns(x_labels)
 print(type(feature_columns))
 
 
-# Create the input function for training + evaluation
+# Create the input function for training + evaluation. boolean = True for training.
 def input_fn(features, labels, training=True, batch_size=100 ):
     dataf = tf.data.Dataset.from_tensor_slices((dict(features), labels))
     if training:
         dataf = dataf.shuffle(1000).repeat()
     return dataf.batch(batch_size=batch_size)
-def eval_input_fn(x_testing, y_testing):
-    dataf = tf.data.Dataset.from_tensor_slices((dict(x_testing), y_testing))
-    return dataf.shuffle(1000).repeat().batch(10)
 
-optimizer_adam= tf.compat.v1.train.AdamOptimizer(learning_rate=0.01)
-model=tf.estimator.DNNClassifier(hidden_units=[1,1], feature_columns=feature_columns,  optimizer=optimizer_adam, n_classes=3)
+# Think about adding additional classifiers and comparing their accuracies (like a random forest). 
+timer_start = time.time()
+optimizer_adam= tf.compat.v1.train.AdamOptimizer(learning_rate=0.001)
+model=tf.estimator.DNNClassifier(hidden_units=[14,37,19], feature_columns=feature_columns,  optimizer=optimizer_adam, n_classes=3)
 model.train(input_fn=lambda: input_fn(features=x_train, labels=y_train, training=True), steps=1000) # originally steps=1000 from template
 eval_results = model.evaluate(input_fn=lambda: input_fn(features=x_test, labels=y_test, training=False), steps=1)
+end_timer = time.time()
+print("Model training and testing took ", round(end_timer - timer_start, 1), " seconds.")
 print(eval_results)
 
+
+"""
+############# CHOOSING HIDDEN UNITS #############
+"Artificial Intelligence for Humans, Volume 3: Deep Learning and Neural Networks" ISBN: 1505714346
+Traditionally, neural networks only have three types of layers: hidden, input and output. 
+
+General rule of thumbs: (all different)
+A: The number of hidden neurons should be between the size of the input layer and the size of the output layer.
+B: The number of hidden neurons should be 2/3 the size of the input layer, plus the size of the output layer.
+C: The number of hidden neurons should be less than twice the size of the input layer.
+
+The number of layers are described below. We will be using 3 layers total since we don't want to be overfitting the 243 training cases.  
+1   :	Can approximate any function that contains a continuous mapping from one finite space to another.
+2   :	Can represent an arbitrary decision boundary to arbitrary accuracy with rational activation functions and can approximate any smooth mapping to any accuracy.
+>2	:   Additional layers can learn complex representations (sort of automatic feature engineering) for layer layers.
+
+####################### Testing Model Results: Using steps=1000, learning rate=0.001, features=1367 #######################
+
+Random inputs:
+hidden_units=[37,37,37]                                            = 85.19% accuracy
+hidden_units=[37,18,6 ]                                            = 88.89% accuracy
+hidden_units=[50,30,19]                                            = 88.89% accuracy
+
+A: The number of hidden neurons should be between the size of the input layer and the size of the output layer.
+1367 input features, hidden_units=[30,37,19]                       = 92.59% accuracy
+
+B: The number of hidden neurons should be 2/3 the size of the input layer, plus the size of the output layer.
+hidden_units=[37,25,17]                                            = 90.12% accuracy
+hidden_units=[37,28,17]                                            = 91.35% accuracy 
+hidden_units=[37,30,19]                                            = 93.82% accuracy
+
+
+C: The number of hidden neurons should be less than twice the size of the input layer.
+hidden_units=[14,37,19]                                            = 93.83% accuracy
+
+
+
+"""
