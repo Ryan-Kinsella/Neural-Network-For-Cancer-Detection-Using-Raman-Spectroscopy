@@ -114,10 +114,10 @@ print(x_labels)
 
 
 # Create the input function for training + evaluation. boolean = True for training.
-def input_fn(features, labels, training=True, batch_size=100 ):
+def input_fn(features, labels, training=True, batch_size=32 ):
     dataf = tf.data.Dataset.from_tensor_slices((dict(features), labels))
     if training:
-        dataf = dataf.shuffle(1000).repeat()
+        dataf = dataf.shuffle(200).repeat() # shuffle ~<half the data
     return dataf.batch(batch_size=batch_size)
 
 # Think about adding additional classifiers and comparing their accuracies (like a random forest). 
@@ -125,7 +125,7 @@ timer_start = time.time()
 learning_rate=0.001
 print("Build optimizer: Learning rate = " , learning_rate)
 optimizer_adam= tf.compat.v1.train.AdamOptimizer(learning_rate=learning_rate)
-hidden_units=[14,37,19,6]
+hidden_units=[37,30,19]
 print("Building model: Hidden units = " , hidden_units)
 model=tf.estimator.DNNClassifier(hidden_units=hidden_units, feature_columns=feature_columns,  optimizer=optimizer_adam, n_classes=3)
 print("Training model...")
@@ -185,5 +185,23 @@ DNN: more than 3 layers
 hidden_units=[14,37,19, 6]                                         = 91.36% accuracy
 
 
+
 ####################### Testing Model Results: Using steps=1000, learning rate=0.001, features=1367 #######################
+"""
+
+
+"""
+Nov. 27 notes:
+
+- add validation set, compare results to the test set.
+- essentially try our best to automate everything so it will perform well on a new data set,
+  providing explanations on why we chose different methods. 
+- consider using sequential feature selection, ie. choose a (correlated?) feature, then add another one and see if it adds 
+- batch size ~32, test with it
+- maybe scrap the sklearn top 20% data set in place of sequential feature selection
+  OR try with top 5-10% since our data set is short and wide
+- For NN, the rule of thumb is for number of SAMPLES, not the input layer
+
+
+
 """
