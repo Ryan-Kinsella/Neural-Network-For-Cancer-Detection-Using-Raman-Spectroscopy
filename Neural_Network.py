@@ -33,10 +33,6 @@ Ryan - The Github csv file does not contain an initial row creating the labels f
 
 
 """
-
-
-
-
 ###############################################################################################################
 # Setup
 ###############################################################################################################
@@ -49,7 +45,6 @@ import numpy as np
 import pandas as pd
 from sklearn import metrics # unused
 import tensorflow as tf
-import seaborn as sns # unused
 
 from tensorflow.python.data import Dataset
 tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
