@@ -74,15 +74,6 @@ for i in range (0,324): # 0 - 323, same size as x
 # print (y)
 
 
-#print(dataset.describe(include='all'))
-#print(dataset.columns)
-########### Find way to display like in source 7
-#dataset_seaborn = sns.load_dataset(name='https://github.com/Ryan-Kinsella/Neural-Network-For-Cancer-Detection-Using-Raman-Spectroscopy/blob/master/Dataset_Github_csv.csv')
-#sns.countplot(data=dataset_seaborn, x='0.136482218') #this only works in python running notebooks like jupytor or whatever, Source 7
-#plt.show()
-
-
-
 
 # Split data into train and test set
 from sklearn.model_selection import train_test_split
@@ -104,7 +95,7 @@ y_train= lbl_encoder.fit_transform(y_train)
 y_test= lbl_encoder.fit_transform(y_test)
 y_validation= lbl_encoder.fit_transform(y_validation)
 # print(y) # shows how the classes are numerically assigned through this change, by 0,1, or 2
-
+del training, validation, test # clear memory
 
 # Convert numeric features into Dense Tensors, and construct the feature columns
 def construct_feature_columns(input_features_DataFrame):
