@@ -50,6 +50,7 @@ import pandas as pd
 from sklearn import metrics # unused
 import tensorflow as tf
 import seaborn as sns # unused
+
 pd.options.display.max_rows = 8 # will use 8 by default for count, mean, std ... max
 pd.options.display.max_columns = 9
 pd.options.display.float_format = '{:.6f}'.format
@@ -81,15 +82,29 @@ for i in range (0,324): # 0 - 323, same size as x
 #plt.show()
 
 
-# Encode target variable (y)
-from sklearn.preprocessing import LabelEncoder
-lbl_encoder = LabelEncoder()
-y= lbl_encoder.fit_transform(y)
-# print(y) # shows how the classes are numerically assigned through this change, by 0,1, or 2
+
 
 # Split data into train and test set
 from sklearn.model_selection import train_test_split
-x_train, x_test, y_train, y_test= train_test_split(x,y, test_size=0.25) # 75% training, 25% test
+# x_train, x_test, y_train, y_test= train_test_split(x,y, test_size=0.20) # 60% training, 20% test, 20% validation
+
+# https://stackoverflow.com/questions/38250710/how-to-split-data-into-3-sets-train-validation-and-test
+# x represents attributes, y represents class label
+training, validation, test = np.split(dataset.sample(frac=1), [int(.6*len(dataset)), int(.8*len(dataset))]) # 60% test, 20% validation, 20% test split.
+x_train = training.drop(['class'], axis=1)
+y_train = training['class']
+x_validation=validation.drop(['class'], axis=1)
+y_validation=validation['class']
+x_test=test.drop(['class'], axis=1)
+y_test=test['class']
+# Encode class label y
+from sklearn.preprocessing import LabelEncoder
+lbl_encoder = LabelEncoder()
+y_train= lbl_encoder.fit_transform(y_train)
+y_test= lbl_encoder.fit_transform(y_test)
+y_validation= lbl_encoder.fit_transform(y_validation)
+# print(y) # shows how the classes are numerically assigned through this change, by 0,1, or 2
+
 
 # Convert numeric features into Dense Tensors, and construct the feature columns
 def construct_feature_columns(input_features_DataFrame):
@@ -109,7 +124,7 @@ def construct_feature_columns(input_features_DataFrame):
 
 x_labels = x.head(0) # gets the labels for x, with the dropped class column
 feature_columns=construct_feature_columns(x_labels)
-print(x_labels)
+# print(x_labels)
 # print(type(feature_columns))
 
 
@@ -130,11 +145,17 @@ print("Building model: Hidden units = " , hidden_units)
 model=tf.estimator.DNNClassifier(hidden_units=hidden_units, feature_columns=feature_columns,  optimizer=optimizer_adam, n_classes=3)
 print("Training model...")
 model.train(input_fn=lambda: input_fn(features=x_train, labels=y_train, training=True), steps=1000) # originally steps=1000 from template
-print("Evaluate model...")
-eval_results = model.evaluate(input_fn=lambda: input_fn(features=x_test, labels=y_test, training=False), steps=1)
+print("Validate model...")
+validation_results = model.evaluate(input_fn=lambda: input_fn(features=x_validation, labels=y_validation, training=False), steps=1)
+print("Testing model...")
+testing_results = model.evaluate(input_fn=lambda: input_fn(features=x_test, labels=y_test, training=False), steps=1)
+
 end_timer = time.time()
 print("Model training and testing took ", round(end_timer - timer_start, 1), " seconds.")
-print(eval_results)
+print("Validation results: ")
+print(validation_results)
+print("Testing results: ")
+print(testing_results)
 print("hidden_units=",hidden_units,"                                ")
 
 """
