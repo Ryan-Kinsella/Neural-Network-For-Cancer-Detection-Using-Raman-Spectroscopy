@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from string import digits
 
 #bankdata = pd.read_csv("C:/Users/saman/PycharmProjects/SVMtester/bill_authentication.csv")
-cancerdata = pd.read_csv("Dataset_Github_csv.csv")
+cancerdata = pd.read_csv("Dataset_Github_Labeled.csv")
 
 
 cancerdata.shape
