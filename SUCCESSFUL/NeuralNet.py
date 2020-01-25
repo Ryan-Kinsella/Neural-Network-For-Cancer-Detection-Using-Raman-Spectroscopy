@@ -67,7 +67,6 @@ def addNoise(data):
         print(i)
         for j in range (1,1365):
             data.iloc[i,j]+=(np.random.normal(m[j], sd[j], 1))[0]
-    [x,y] = row, column
     return data
 
 pd.options.display.max_rows = 8 # will use 8 by default for count, mean, std ... max
@@ -75,7 +74,7 @@ pd.options.display.max_columns = 9
 pd.options.display.float_format = '{:.6f}'.format
 pd.set_option('mode.chained_assignment', None)
 dataset = pd.read_csv("Dataset_Github_Labeled.csv")
-dataset = addNoise(dataset) #ADDS UP TO 2500 ROWS
+#dataset = addNoise(dataset) #ADDS UP TO 2500 ROWS
 # From DataFrame, split into features (x) and labels (y)
 x= dataset.drop(['class'], axis=1)
 y= dataset['class']
@@ -129,6 +128,9 @@ model=tf.estimator.DNNClassifier(hidden_units=hidden_units, feature_columns=feat
 print("Training model...")
 model.train(input_fn=lambda: input_fn(features=x_train, labels=y_train, training=True), steps=1000) # originally steps=1000 from template
 print("Evaluate model...")
+predictions = list(model.predict(input_fn=lambda: input_fn(features=x_test, labels=y_test, training=False)))
+#THIS GIVES AN ARRAY OF CLASS PROBABILITIES - use this w/ model accuracy or whatever
+print(predictions[0]["probabilities"])
 eval_results = model.evaluate(input_fn=lambda: input_fn(features=x_test, labels=y_test, training=False), steps=1)
 end_timer = time.time()
 print("Model training and testing took ", round(end_timer - timer_start, 1), " seconds.")
