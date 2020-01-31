@@ -83,13 +83,16 @@ def trainModels(feature_columns, x_train, y_train):
 
 def trainTree(feature_columns, x_train, y_train):
     model = tf.estimator.BoostedTreesClassifier(feature_columns, n_batches_per_layer = 1)
-    model.train(input_fn=lambda: input_fn(features=x_train, labels=y_train, training=True), max_steps=1000)
+    # model.train(input_fn=lambda: input_fn(features=x_train, labels=y_train, training=True), max_steps=1000)
 
     return model
 
 def trainDNN(feature_columns, x_train, y_train):
     learning_rate=0.001
-    optimizer_adam= tf.compat.v1.train.AdamOptimizer(learning_rate=learning_rate)
+    if (tf.__version__[0] == '2'):
+        optimizer_adam= tf.optimizers.Adam(learning_rate=learning_rate)
+    else:
+        optimizer_adam= tf.compat.v1.train.AdamOptimizer(learning_rate=learning_rate)
     hidden_units=[37,30,19]
     model=tf.estimator.DNNClassifier(hidden_units=hidden_units, feature_columns=feature_columns,  optimizer=optimizer_adam, n_classes=2)
     model.train(input_fn=lambda: input_fn(features=x_train, labels=y_train, training=True), steps=1000) # originally steps=1000 from template
@@ -108,9 +111,13 @@ feature_columns=construct_feature_columns(x_labels)
 
 modelSVM, modelDNN, modelTREE = trainModels(feature_columns, x_train, y_train)
 ptemp = list(modelDNN.predict(input_fn=lambda: input_fn(features=x_test, labels=y_test, training=False)))
-predictionsDNN = ptemp["probabilities"]
+predictionsDNN = []
+for i in range(len(ptemp)):
+    predictionsDNN.append(ptemp[i]["probabilities"])
 ptemp =list(modelTREE.predict(input_fn=lambda: input_fn(features=x_test, labels=y_test, training=False)))
-predictionsTREE= ptemp["probabilities"]
+predictionsTREE = []
+for i in range(len(ptemp)):
+    predictionsTREE.append(ptemp[i]["probabilities"])
 predictionsSVM = modelSVM.predict_proba(x_test)
 
 print (predictionsDNN[0])
