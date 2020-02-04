@@ -10,6 +10,11 @@ import seaborn as sns
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 from sklearn.svm import SVC
+import keras
+from keras.models import Sequential
+from keras.layers import Dense, Activation, Conv1D, Flatten, Dropout, MaxPooling1D
+from sklearn import tree
+from sklearn.metrics import accuracy_score
 
 pd.options.display.max_rows = 8
 pd.options.display.max_columns = 9
@@ -22,9 +27,9 @@ x= dataset.drop(['class'], axis=1)
 y= dataset['class']
 for i in range (0,dataset.shape[0]):
     if y[i].startswith('High-grade'):
-        y[i] = 'Cancer'
+        y[i] = 'High-grade'
     elif y[i].startswith('Low-grade'):
-        y[i] = 'Cancer'
+        y[i] = 'Low-grade'
     elif y[i].startswith('Normal'):
         y[i] = 'Normal'
 
@@ -70,7 +75,8 @@ def input_fn(features, labels, training=True, batch_size=32 ):
         dataf = dataf.shuffle(200).repeat()
     return dataf.batch(batch_size=batch_size)
 
-def trainModels(feature_columns, x_train, y_train):
+def trainModels(feature_columns, x_train, y_train,x_test,y_test):
+    modelCNN,accuracy,predictions = trainCNN(x_train,y_train,x_test, y_test)
     print('STARTING TO TRAIN THE MODELS--------------------------------------------------')
     modelSVM = trainSVM(x_train, y_train)
     print('FINISHED THE SVM--------------------------------------------------------------')
@@ -79,13 +85,40 @@ def trainModels(feature_columns, x_train, y_train):
     modelTREE = trainTree(feature_columns, x_train, y_train)
     print('FINISHED THE TREE-------------------------------------------------------------')
 
-    return modelSVM, modelDNN, modelTREE
+    return modelSVM, modelDNN, modelTREE, modelCNN, accuracy,predictions
 
 def trainTree(feature_columns, x_train, y_train):
-    model = tf.estimator.BoostedTreesClassifier(feature_columns, n_batches_per_layer = 1)
-    # model.train(input_fn=lambda: input_fn(features=x_train, labels=y_train, training=True), max_steps=1000)
+    treeclassifier = tree.DecisionTreeClassifier()
+    treeclassifier = treeclassifier.fit(x_train, y_train)
 
-    return model
+    return treeclassifier
+
+def trainCNN(trainX, trainY, testX, testY):
+    trainY = keras.utils.to_categorical(trainY)
+    testY = keras.utils.to_categorical(testY)
+
+    verbose, epochs, batch_size = 0, 10, 32
+    trainX = np.expand_dims(trainX, axis=2)
+    testX = np.expand_dims(testX, axis=2)
+
+    n_timesteps, n_features, n_outputs = trainX.shape[1], trainX.shape[2], trainY.shape[1]
+
+    model = Sequential()
+    model.add(Conv1D(filters=64, kernel_size=3, activation='relu', input_shape=(n_timesteps,n_features)))
+    model.add(Conv1D(filters=64, kernel_size=3, activation='relu'))
+    model.add(Dropout(0.5))
+    model.add(MaxPooling1D(pool_size=2))
+    model.add(Flatten())
+    model.add(Dense(100, activation='relu'))
+    model.add(Dense(n_outputs, activation='softmax'))
+    model.compile(loss='mean_squared_error', optimizer='adam', metrics=['accuracy'])
+
+
+    model.fit(trainX, trainY, epochs=epochs, batch_size=batch_size, verbose=verbose)
+    _, accuracy = model.evaluate(testX, testY, batch_size=batch_size, verbose=0)
+    OP = model.predict_proba(testX)
+
+    return model, accuracy, OP
 
 def trainDNN(feature_columns, x_train, y_train):
     learning_rate=0.001
@@ -94,7 +127,7 @@ def trainDNN(feature_columns, x_train, y_train):
     else:
         optimizer_adam= tf.compat.v1.train.AdamOptimizer(learning_rate=learning_rate)
     hidden_units=[37,30,19]
-    model=tf.estimator.DNNClassifier(hidden_units=hidden_units, feature_columns=feature_columns,  optimizer=optimizer_adam, n_classes=2)
+    model=tf.estimator.DNNClassifier(hidden_units=hidden_units, feature_columns=feature_columns,  optimizer=optimizer_adam, n_classes=3)
     model.train(input_fn=lambda: input_fn(features=x_train, labels=y_train, training=True), steps=1000) # originally steps=1000 from template
     return model
 
@@ -109,18 +142,18 @@ x_train, y_train, x_validation, y_validation, x_test, y_test = splitData(dataset
 x_labels = x.head(0)
 feature_columns=construct_feature_columns(x_labels)
 
-modelSVM, modelDNN, modelTREE = trainModels(feature_columns, x_train, y_train)
+modelSVM, modelDNN, modelTREE, modelCNN, accuracy, predictionsCNN = trainModels(feature_columns, x_train, y_train,x_test,y_test)
 ptemp = list(modelDNN.predict(input_fn=lambda: input_fn(features=x_test, labels=y_test, training=False)))
 predictionsDNN = []
 for i in range(len(ptemp)):
     predictionsDNN.append(ptemp[i]["probabilities"])
-ptemp =list(modelTREE.predict(input_fn=lambda: input_fn(features=x_test, labels=y_test, training=False)))
-predictionsTREE = []
-for i in range(len(ptemp)):
-    predictionsTREE.append(ptemp[i]["probabilities"])
-predictionsSVM = modelSVM.predict_proba(x_test)
+predictionsSVM = modelSVM.predict_proba(x_test) 
+predictionsTREE = modelTREE.predict_proba(x_test)
 
-print (predictionsDNN[0])
-print (predictionsTREE[0])
-print (predictionsSVM[0])
+
+print ('DNN:' ,predictionsDNN[0])
+print ('TREE:', predictionsTREE[0])
+print ('SVM:' ,predictionsSVM[0])
+print ('CNN: ',predictionsCNN[0])
+
 
