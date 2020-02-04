@@ -48,9 +48,12 @@ model.add(MaxPooling1D(pool_size=2))
 model.add(Flatten())
 model.add(Dense(100, activation='relu'))
 model.add(Dense(n_outputs, activation='softmax'))
-model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+model.compile(loss='mean_squared_error', optimizer='adam', metrics=['accuracy'])
+
 
 model.fit(trainX, trainY, epochs=epochs, batch_size=batch_size, verbose=verbose)
 _, accuracy = model.evaluate(testX, testY, batch_size=batch_size, verbose=0)
+OP = model.predict_proba(testX)
 
 print(accuracy)
+print(OP)
