@@ -94,9 +94,6 @@ def trainTree(feature_columns, x_train, y_train):
     return treeclassifier
 
 def trainCNN(trainX, trainY, testX, testY):
-    trainY = trainY - 1
-    testY = testY - 1
-
     trainY = keras.utils.to_categorical(trainY)
     testY = keras.utils.to_categorical(testY)
 
@@ -158,4 +155,5 @@ print ('DNN:' ,predictionsDNN[0])
 print ('TREE:', predictionsTREE[0])
 print ('SVM:' ,predictionsSVM[0])
 print ('CNN: ',predictionsCNN[0])
+
 

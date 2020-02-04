@@ -21,6 +21,7 @@ for i in range (0,dataset.shape[0]): # 0 - 323, same size as x
         y[i] = 'Normal'
 
 
+
 from sklearn.preprocessing import LabelEncoder
 lbl_encoder = LabelEncoder()
 y= lbl_encoder.fit_transform(y)
@@ -28,8 +29,8 @@ y= lbl_encoder.fit_transform(y)
 from sklearn.model_selection import train_test_split
 trainX, testX, trainY, testY = train_test_split(x,y, test_size=0.25)
 
-trainY = trainY - 1
-testY = testY - 1
+# trainY = trainY - 1
+# testY = testY - 1
 
 trainY = keras.utils.to_categorical(trainY)
 testY = keras.utils.to_categorical(testY)
@@ -48,12 +49,12 @@ model.add(MaxPooling1D(pool_size=2))
 model.add(Flatten())
 model.add(Dense(100, activation='relu'))
 model.add(Dense(n_outputs, activation='softmax'))
-model.compile(loss='mean_squared_error', optimizer='adam', metrics=['accuracy'])
-
+model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
 
 model.fit(trainX, trainY, epochs=epochs, batch_size=batch_size, verbose=verbose)
 _, accuracy = model.evaluate(testX, testY, batch_size=batch_size, verbose=0)
-OP = model.predict_proba(testX)
+probs = model.predict_proba(testX)
+
 
 print(accuracy)
-print(OP)
+print(probs)
