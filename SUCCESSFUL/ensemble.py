@@ -14,7 +14,7 @@ import keras
 from keras.models import Sequential
 from keras.layers import Dense, Activation, Conv1D, Flatten, Dropout, MaxPooling1D
 from sklearn import tree
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score, confusion_matrix
 
 pd.options.display.max_rows = 8
 pd.options.display.max_columns = 9
@@ -42,7 +42,6 @@ def addNoise(data,powerIN):
     for i in range(powerIN): #how many duplicates
         data2 = pd.concat(frames,ignore_index=True)
     for i in range(original, data.shape[0]):
-        print(i)
         for j in range (1,1365):
             data.iloc[i,j]+=(np.random.normal(m[j], sd[j], 1))[0]
     return data
@@ -77,14 +76,9 @@ def input_fn(features, labels, training=True, batch_size=32 ):
 
 def trainModels(feature_columns, x_train, y_train,x_test,y_test):
     modelCNN,accuracy,predictions = trainCNN(x_train,y_train,x_test, y_test)
-    print('STARTING TO TRAIN THE MODELS--------------------------------------------------')
     modelSVM = trainSVM(x_train, y_train)
-    print('FINISHED THE SVM--------------------------------------------------------------')
     modelDNN = trainDNN(feature_columns, x_train, y_train)
-    print('FINISHED THE DNN--------------------------------------------------------------')
     modelTREE = trainTree(feature_columns, x_train, y_train)
-    print('FINISHED THE TREE-------------------------------------------------------------')
-
     return modelSVM, modelDNN, modelTREE, modelCNN, accuracy,predictions
 
 def trainTree(feature_columns, x_train, y_train):
@@ -136,13 +130,24 @@ def trainSVM(x_train, y_train):
     model.fit(x_train, y_train)
     return model
 
+def getAccuracy(x_test, y_test, modelSVM, modelDNN, modelTREE, accuracyCNN):
+    pSVM = modelSVM.predict(x_test)
+    accuracySVM = accuracy_score(pSVM,y_test)
+    pTREE = modelTREE.predict(x_test)
+    accuracyTREE = accuracy_score(pTREE, y_test)
+    pDNN = modelDNN.evaluate(input_fn=lambda: input_fn(features=x_test, labels=y_test, training=False), steps=1)
+    accuracyDNN = pDNN["accuracy"]
+
+    return accuracySVM, accuracyDNN, accuracyTREE, accuracyCNN
+
+
 #split into train/test/val
 x_train, y_train, x_validation, y_validation, x_test, y_test = splitData(dataset)
 #construct feature columns
 x_labels = x.head(0)
 feature_columns=construct_feature_columns(x_labels)
 
-modelSVM, modelDNN, modelTREE, modelCNN, accuracy, predictionsCNN = trainModels(feature_columns, x_train, y_train,x_test,y_test)
+modelSVM, modelDNN, modelTREE, modelCNN, accuracyCNN, predictionsCNN = trainModels(feature_columns, x_train, y_train,x_test,y_test)
 ptemp = list(modelDNN.predict(input_fn=lambda: input_fn(features=x_test, labels=y_test, training=False)))
 predictionsDNN = []
 for i in range(len(ptemp)):
@@ -150,10 +155,34 @@ for i in range(len(ptemp)):
 predictionsSVM = modelSVM.predict_proba(x_test) 
 predictionsTREE = modelTREE.predict_proba(x_test)
 
+accuracySVM, accuracyDNN, accuracyTREE, accuracyCNN = getAccuracy(x_test, y_test, modelSVM, modelDNN, modelTREE, accuracyCNN)
 
-print ('DNN:' ,predictionsDNN[0])
-print ('TREE:', predictionsTREE[0])
-print ('SVM:' ,predictionsSVM[0])
-print ('CNN: ',predictionsCNN[0])
+print(y_train)
+predictionsENS = []
+
+for i in range(len(predictionsDNN)):
+    tempDNN = predictionsDNN[i]
+    tempCNN = predictionsCNN[i]
+    tempTREE = predictionsTREE[i]
+    tempSVM = predictionsSVM[i]
+    score0 = accuracyDNN*tempDNN[0] + accuracyCNN*tempCNN[0] + accuracyTREE*accuracyTREE*tempTREE[0] + accuracySVM*tempSVM[0]
+    score1 = accuracyDNN*tempDNN[1] + accuracyCNN*tempCNN[1] + accuracyTREE*accuracyTREE*tempTREE[1] + accuracySVM*tempSVM[1]
+    score2 = accuracyDNN*tempDNN[2] + accuracyCNN*tempCNN[2] + accuracyTREE*accuracyTREE*tempTREE[2] + accuracySVM*tempSVM[2]
+    if score0 > score1 and score0 > score2:
+        predictionsENS.append(0)
+    elif score1 > score0 and score1 > score2:
+        predictionsENS.append(1)
+    elif score2 > score0 and score2 > score1:
+        predictionsENS.append(2)
+
+
+finalAccuracy = accuracy_score(predictionsENS, y_test)
+print('DNN:' , accuracyDNN)
+print('CNN:', accuracyCNN)
+print('SVM:', accuracySVM)
+print('TREE: ', accuracyTREE)
+print('...................')
+print('ENS:' ,finalAccuracy)
+print(confusion_matrix(predictionsENS, y_test))
 
 
