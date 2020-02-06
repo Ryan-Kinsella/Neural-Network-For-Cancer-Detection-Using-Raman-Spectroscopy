@@ -32,9 +32,6 @@ for row in cancerdata[cancerdata.columns[-1]]:
     cancerdata[cancerdata.columns[-1]][count]=row
     count=count+1
 
-print(cancerdata[cancerdata.columns[-1]])
-
-
 #data preprocessing
 values=['High','Low','Normal']
 X = cancerdata.drop(cancerdata.columns[-1], axis=1)
@@ -51,10 +48,12 @@ from sklearn.svm import SVC
 svclassifier = SVC(kernel='linear', probability = True)
 svclassifier.fit(X_train, y_train)
 
+from sklearn.metrics import accuracy_score
 #predict
 y_pred = svclassifier.predict(X_test)
 class_probabilities = svclassifier.predict_proba(X_test)
-print(class_probabilities)
+accuracy = accuracy_score(y_pred, y_test)
+print(accuracy)
 #evaluate
 from sklearn.metrics import classification_report, confusion_matrix
 #we don't need this i don't think
