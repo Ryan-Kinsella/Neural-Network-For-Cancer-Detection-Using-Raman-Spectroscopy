@@ -50,35 +50,43 @@ import pandas as pd
 from sklearn import metrics # unused
 import tensorflow as tf
 import seaborn as sns # unused
+
+def addNoise(data):
+    sd = dataset.std(axis=0)
+    m = dataset.mean(axis = 0)
+    original = (data.shape[0])
+    datacopy = data.copy()
+    frames = [data,datacopy]
+    for i in range(1): #how many duplicates
+        data2 = pd.concat(frames,ignore_index=True)
+    print('------------------------------------')
+    print(data2)
+    print(data2.shape[0])
+    print('------------------------------------')
+    for i in range(original, data.shape[0]):
+        print(i)
+        for j in range (1,1365):
+            data.iloc[i,j]+=(np.random.normal(m[j], sd[j], 1))[0]
+    return data
+
 pd.options.display.max_rows = 8 # will use 8 by default for count, mean, std ... max
 pd.options.display.max_columns = 9
 pd.options.display.float_format = '{:.6f}'.format
 pd.set_option('mode.chained_assignment', None)
-
 dataset = pd.read_csv("Dataset_Github_Labeled.csv")
+#dataset = addNoise(dataset) #ADDS UP TO 2500 ROWS
 # From DataFrame, split into features (x) and labels (y)
 x= dataset.drop(['class'], axis=1)
 y= dataset['class']
 # change y in the csv file to be assigned to one of three classes: High-grade, Low-grade, Normal
-for i in range (0,324): # 0 - 323, same size as x
+for i in range (0,dataset.shape[0]): # 0 - 323, same size as x
     #print(type(y[i]))
     if y[i].startswith('High-grade'):  # if the last column contains text "High-grade", etc below.
         y[i] = 'High-grade'
-    elif y[i].startswithx`  ('Low-grade'):
+    elif y[i].startswith    ('Low-grade'):
         y[i] = 'Low-grade'
     elif y[i].startswith('Normal'):
         y[i] = 'Normal'
-# GIVES WARNINGS although it still works, see print below
-# Warnings can be turned back on by deleting pd.set_option('mode.chained_assignment', None)
-# print (y)
-
-
-#print(dataset.describe(include='all'))
-#print(dataset.columns)
-########### Find way to display like in source 7
-#dataset_seaborn = sns.load_dataset(name='https://github.com/Ryan-Kinsella/Neural-Network-For-Cancer-Detection-Using-Raman-Spectroscopy/blob/master/Dataset_Github_csv.csv')
-#sns.countplot(data=dataset_seaborn, x='0.136482218') #this only works in python running notebooks like jupytor or whatever, Source 7
-#plt.show()
 
 
 # Encode target variable (y)
@@ -93,24 +101,13 @@ x_train, x_test, y_train, y_test= train_test_split(x,y, test_size=0.25) # 75% tr
 
 # Convert numeric features into Dense Tensors, and construct the feature columns
 def construct_feature_columns(input_features_DataFrame):
-  """Construct the TensorFlow Feature Columns.
-
-  Args:
-    input_features: DataFrame with the names of the numerical input features to use.
-  Returns:
-    A set of tf numeric feature columns
-  """
   tensorSet = ([])
   for elem in input_features_DataFrame:
     tensorSet.append( tf.feature_column.numeric_column(str(elem)) ) # where elem is a str feature label
   return tensorSet
-  # return set([tf.feature_column.numeric_column(my_feature)
-  #             for my_feature in input_features_DataFrame])
-
 x_labels = x.head(0) # gets the labels for x, with the dropped class column
 feature_columns=construct_feature_columns(x_labels)
 print(x_labels)
-# print(type(feature_columns))
 
 
 # Create the input function for training + evaluation. boolean = True for training.
@@ -131,77 +128,10 @@ model=tf.estimator.DNNClassifier(hidden_units=hidden_units, feature_columns=feat
 print("Training model...")
 model.train(input_fn=lambda: input_fn(features=x_train, labels=y_train, training=True), steps=1000) # originally steps=1000 from template
 print("Evaluate model...")
+predictions = list(model.predict(input_fn=lambda: input_fn(features=x_test, labels=y_test, training=False)))
+#THIS GIVES AN ARRAY OF CLASS PROBABILITIES - use this w/ model accuracy or whatever
+print(predictions[0]["probabilities"])
 eval_results = model.evaluate(input_fn=lambda: input_fn(features=x_test, labels=y_test, training=False), steps=1)
 end_timer = time.time()
 print("Model training and testing took ", round(end_timer - timer_start, 1), " seconds.")
 print(eval_results)
-print("hidden_units=",hidden_units,"                                ")
-
-"""
-############# CHOOSING HIDDEN UNITS #############
-"Artificial Intelligence for Humans, Volume 3: Deep Learning and Neural Networks" ISBN: 1505714346
-Traditionally, neural networks only have three types of layers: hidden, input and output. 
-
-General rule of thumbs: (all different)
-A: The number of hidden neurons should be between the size of the input layer and the size of the output layer.
-B: The number of hidden neurons should be 2/3 the size of the input layer, plus the size of the output layer.
-C: The number of hidden neurons should be less than twice the size of the input layer.
-
-The number of layers are described below. We will be using 3 layers total since we don't want to be overfitting the 243 training cases.  
-1   :	Can approximate any function that contains a continuous mapping from one finite space to another.
-2   :	Can represent an arbitrary decision boundary to arbitrary accuracy with rational activation functions and can approximate any smooth mapping to any accuracy.
->2	:   Additional layers can learn complex representations (sort of automatic feature engineering) for layer layers.
-
-####################### Testing Model Results: Using steps=1000, learning rate=0.001, features=1367 #######################
-Random inputs:
-hidden_units=[37,37,37]                                            = 85.19% accuracy
-hidden_units=[37,18,6 ]                                            = 88.89% accuracy
-hidden_units=[50,30,19]                                            = 88.89% accuracy
-hidden_units=[37,25,17]                                            = 90.12% accuracy
-hidden_units=[37,28,17]                                            = 91.35% accuracy 
-hidden_units=[37,30,19]                                            = 93.82% accuracy
-
-A: The number of hidden neurons should be between the size of the input layer and the size of the output layer.
-1367 input features, hidden_units=[30,37,19]                       = 92.59% accuracy
-
-B: The number of hidden neurons should be 2/3 the size of the input layer, plus the size of the output layer.
-hidden_units=[31,37,6]                                             = 95.06% accuracy
-hidden_units=[33,37,8]                                             = 91.35% accuracy
-hidden_units=[32,37,7]                                             = 83.35% accuracy
-hidden_units=[30,37,5]                                             = 93.38% accuracy
-hidden_units=[29,37,4]                                             = 93.38% accuracy
-hidden_units=[28,37,3]                                             = 93.38% accuracy
-hidden_units=[34,37,9]                                             = 92.59% accuracy
-hidden_units=[37,37,12]                                            = 93.83% accuracy
-
-
-
-C: The number of hidden neurons should be less than twice the size of the input layer.
-hidden_units=[14,37,19]                                            = 93.83% accuracy
-hidden_units=[13,37,19]                                            = 91.58% accuracy
-hidden_units=[17,37,19]                                            = 87.58% accuracy
-
-DNN: more than 3 layers
-hidden_units=[14,37,19, 6]                                         = 91.36% accuracy
-
-
-
-####################### Testing Model Results: Using steps=1000, learning rate=0.001, features=1367 #######################
-"""
-
-
-"""
-Nov. 27 notes:
-
-- add validation set, compare results to the test set.
-- essentially try our best to automate everything so it will perform well on a new data set,
-  providing explanations on why we chose different methods. 
-- consider using sequential feature selection, ie. choose a (correlated?) feature, then add another one and see if it adds 
-- batch size ~32, test with it
-- maybe scrap the sklearn top 20% data set in place of sequential feature selection
-  OR try with top 5-10% since our data set is short and wide
-- For NN, the rule of thumb is for number of SAMPLES, not the input layer
-
-
-
-"""
