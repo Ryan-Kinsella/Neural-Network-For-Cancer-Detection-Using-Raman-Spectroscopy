@@ -96,8 +96,9 @@ def callback(event):
     w.itemconfig(TREEconfText, text= str(TREEconf))
     w.itemconfig(SVMconfText, text= str(SVMconf))
 
-    img1 = ImageTk.PhotoImage(Image.open("graph" + str(sampleNum) + ".png").resize((244,195)))
-    w.create_image(0,305,anchor = NW, image = img1)
+    img3 = ImageTk.PhotoImage(Image.open("graph" + str(sampleNum) + ".png").resize((244,195)))
+    w.itemconfig(image1, image = img3)
+    
 
     if predictionsEXP[sampleNum] != predictionsENS[sampleNum]:
         w.itemconfig(correctBox, fill= "pink")  
