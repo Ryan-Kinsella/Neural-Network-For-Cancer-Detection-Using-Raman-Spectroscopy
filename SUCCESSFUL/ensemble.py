@@ -18,8 +18,8 @@ from sklearn.metrics import accuracy_score, confusion_matrix
 import warnings
 
 warnings.filterwarnings("ignore")
-x=DataFrame()
-y=DataFrame()
+x=pd.DataFrame()
+y=pd.DataFrame()
 
 def startup():
     global x, y
