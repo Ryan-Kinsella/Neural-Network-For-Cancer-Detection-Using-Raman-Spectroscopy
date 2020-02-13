@@ -78,7 +78,7 @@ def startup():
     print('ENS:' ,finalAccuracy)
     print(confusion_matrix(predictionsENS, y_test))
 
-    return accuracyDNN, accuracyCNN, accuracySVM, accuracyTREE
+    return accuracyDNN, accuracyCNN, accuracySVM, accuracyTREE, predictionsENS, predictionsDNN, predictionsCNN, predictionsSVM, predictionsTREE,y_test
 
 def addNoise(data,powerIN):
     sd = dataset.std(axis=0)
