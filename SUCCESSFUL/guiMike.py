@@ -3,8 +3,6 @@ from tkinter import *
 from PIL import ImageTk, Image
 import os
 
-from tkinter import *
-
 accuracyDNN, accuracyCNN, accuracySVM, accuracyTREE, predictionsENS, predictionsDNN, predictionsCNN, predictionsSVM, predictionsTREE, predictionsEXP = ensemble.startup()
 
 print(predictionsENS[0])
@@ -68,14 +66,36 @@ ENSprediction, DNNprediction, CNNprediction, TREEprediction, SVMprediction, DNNa
 
 
 def callback(event):
-    global sampleNum
+    global count
 
     if (event.x >= 445 and event.x <= 500 and event.y >= 0 and event.y <= 50):
-        sampleNum = sampleNum + 1
-        w.itemconfig(titleText, text="Sample #" + str(sampleNum))
+        count = count + 1
     if (event.x >= 0 and event.x <= 50 and event.y >= 0 and event.y <= 50):
-        sampleNum = sampleNum - 1
-        w.itemconfig(titleText, text="Sample #" + str(sampleNum))
+        count = count - 1
+        
+    
+    
+    ENSprediction, DNNprediction, CNNprediction, TREEprediction, SVMprediction, DNNacc, CNNacc, TREEacc, SVMacc, DNNconf, CNNconf,SVMconf, TREEconf, EXPprediction, sampleName = getStats(count, accuracyDNN, accuracyCNN, accuracySVM, accuracyTREE, predictionsENS, predictionsDNN, predictionsCNN, predictionsSVM, predictionsTREE, predictionsEXP)
+
+    w.itemconfig(titleText, text=sampleName)
+
+    w.itemconfig(ENSpredictionText, text= str(ENSprediction))
+    w.itemconfig(DNNpredictionText, text= str(DNNprediction))
+    w.itemconfig(CNNpredictionText, text= str(CNNprediction))
+    w.itemconfig(TREEpredictionText, text= str(TREEprediction))
+    w.itemconfig(SVMpredictionText, text= str(SVMprediction))
+
+    w.itemconfig(EXPpredictionText, text= str(EXPprediction))
+    w.itemconfig(DNNaccText, text= str(DNNacc))
+    w.itemconfig(CNNaccText, text= str(CNNacc))
+    w.itemconfig(TREEaccText, text= str(TREEacc))
+    w.itemconfig(SVMaccText, text= str(SVMacc))
+
+    w.itemconfig(DNNconfText, text= str(DNNconf))
+    w.itemconfig(CNNconfText, text= str(CNNconf))
+    w.itemconfig(TREEconfText, text= str(TREEconf))
+    w.itemconfig(SVMconfText, text= str(SVMconf))
+    
 
 master = Tk()
 
@@ -95,8 +115,8 @@ if predictionsENS[count] == predictionsEXP[count]:
     w.create_rectangle(0,225, 500, 275, fill = "#98FB98")  
 else:
     w.create_rectangle(0,225, 500, 275, fill = "pink")  
-w.create_text(125,250, text = ENSprediction)
-w.create_text(375,250, text = EXPprediction)
+ENSpredictionText = w.create_text(125,250, text = ENSprediction)
+EXPpredictionText = w.create_text(375,250, text = EXPprediction)
 w.create_line(125,50,125,225, width = 3)
 w.create_line(250,50,250,225, width = 3)
 w.create_line(375,50,375,225, width = 3)
@@ -111,26 +131,26 @@ w.create_line(460, 10, 485, 25, width = 3)
 w.create_line(460, 40, 485, 25, width = 3)
 
 w.create_text(62,65, text = "DNN:")
-w.create_text(62,100, text = DNNprediction)
-w.create_text(62,135, text = DNNacc)
-w.create_text(62,170, text = DNNconf)
+DNNpredictionText = w.create_text(62,100, text = DNNprediction)
+DNNaccText = w.create_text(62,135, text = DNNacc)
+DNNconfText = w.create_text(62,170, text = DNNconf)
 
 
 w.create_text(187,65, text = "CNN:")
-w.create_text(187,100, text = CNNprediction)
-w.create_text(187,135, text = CNNacc)
-w.create_text(187,170, text = CNNconf)
+CNNpredictionText = w.create_text(187,100, text = CNNprediction)
+CNNaccText = w.create_text(187,135, text = CNNacc)
+CNNconfText = w.create_text(187,170, text = CNNconf)
 
 w.create_text(312,65, text = "SVM:")
-w.create_text(312,100, text = SVMprediction)
-w.create_text(312,135, text = SVMacc)
-w.create_text(312,170, text = SVMconf)
+SVMpredictionText = w.create_text(312,100, text = SVMprediction)
+SVMaccText = w.create_text(312,135, text = SVMacc)
+SVMconfText = w.create_text(312,170, text = SVMconf)
 
 
 w.create_text(437,65, text = "TREE:")
-w.create_text(437,100, text = TREEprediction)
-w.create_text(437,135, text = TREEacc)
-w.create_text(437,170, text = TREEconf)
+TREEpredictionText = w.create_text(437,100, text = TREEprediction)
+TREEaccText = w.create_text(437,135, text = TREEacc)
+TREEconfText = w.create_text(437,170, text = TREEconf)
 
 
 # img1 = ImageTk.PhotoImage(Image.open("doggie.png").resize((244, 195)))
