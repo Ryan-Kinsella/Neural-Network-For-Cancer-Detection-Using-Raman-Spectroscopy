@@ -67,16 +67,19 @@ ENSprediction, DNNprediction, CNNprediction, TREEprediction, SVMprediction, DNNa
 
 
 def callback(event):
-    global count
+    global sampleNum
 
     if (event.x >= 445 and event.x <= 500 and event.y >= 0 and event.y <= 50):
-        count = count + 1
+        sampleNum = sampleNum + 1
     if (event.x >= 0 and event.x <= 50 and event.y >= 0 and event.y <= 50):
-        count = count - 1
-        
+        sampleNum = sampleNum - 1
+    if (sampleNum < 0):
+        sampleNum = len(predictionsENS)-1  
+    if (samppleNum > len(predictionsENS)-1):
+        sampleNum = 0  
     
     
-    ENSprediction, DNNprediction, CNNprediction, TREEprediction, SVMprediction, DNNacc, CNNacc, TREEacc, SVMacc, DNNconf, CNNconf,SVMconf, TREEconf, EXPprediction, sampleName = getStats(count, accuracyDNN, accuracyCNN, accuracySVM, accuracyTREE, predictionsENS, predictionsDNN, predictionsCNN, predictionsSVM, predictionsTREE, predictionsEXP)
+    ENSprediction, DNNprediction, CNNprediction, TREEprediction, SVMprediction, DNNacc, CNNacc, TREEacc, SVMacc, DNNconf, CNNconf,SVMconf, TREEconf, EXPprediction, sampleName = getStats(sampleNum, accuracyDNN, accuracyCNN, accuracySVM, accuracyTREE, predictionsENS, predictionsDNN, predictionsCNN, predictionsSVM, predictionsTREE, predictionsEXP)
 
     w.itemconfig(titleText, text=sampleName)
 
@@ -96,6 +99,11 @@ def callback(event):
     w.itemconfig(CNNconfText, text= str(CNNconf))
     w.itemconfig(TREEconfText, text= str(TREEconf))
     w.itemconfig(SVMconfText, text= str(SVMconf))
+
+    if predictionsEXP[sampleNum] != predictionsENS[sampleNum]:
+        w.itemconfig(correctBox, fill= "pink")  
+    else:
+        w.itemconfig(correctBox, fill= "#98FB98")      
     
 
 master = Tk()
@@ -112,10 +120,8 @@ w.create_line(0,275,500,275,width = 3)
 w.create_line(250,275,250,500, width = 3)
 w.create_text(125,290, text="Spectra:")
 w.create_text(375,290, text="Key Features:")
-if predictionsENS[sampleNum] == predictionsEXP[sampleNum]:
-    w.create_rectangle(0,225, 500, 275, fill = "#98FB98")  
-else:
-    w.create_rectangle(0,225, 500, 275, fill = "pink")  
+correctBox = w.create_rectangle(0,225, 500, 275, fill = "#98FB98")  
+w.create_rectangle(0,225, 500, 275, fill = "pink")  
 ENSpredictionText = w.create_text(125,250, text = ENSprediction)
 EXPpredictionText = w.create_text(375,250, text = EXPprediction)
 w.create_line(125,50,125,225, width = 3)
@@ -152,5 +158,11 @@ w.create_text(437,65, text = "TREE:")
 TREEpredictionText = w.create_text(437,100, text = TREEprediction)
 TREEaccText = w.create_text(437,135, text = TREEacc)
 TREEconfText = w.create_text(437,170, text = TREEconf)
+
+# img1 = ImageTk.PhotoImage(Image.open("doggie.png").resize((244, 195)))
+# img2 = ImageTk.PhotoImage(Image.open("cathat.png").resize((247, 195)))
+
+# w.create_image(0,305,anchor = NW, image = img1)
+# w.create_image(256,305, anchor = NW, image = img2)
 
 mainloop()
