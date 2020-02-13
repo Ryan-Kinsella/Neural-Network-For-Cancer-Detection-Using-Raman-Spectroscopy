@@ -15,23 +15,70 @@ from keras.models import Sequential
 from keras.layers import Dense, Activation, Conv1D, Flatten, Dropout, MaxPooling1D
 from sklearn import tree
 from sklearn.metrics import accuracy_score, confusion_matrix
+import warnings
 
-pd.options.display.max_rows = 8
-pd.options.display.max_columns = 9
-pd.options.display.float_format = '{:.6f}'.format
-pd.set_option('mode.chained_assignment', None)
+warnings.filterwarnings("ignore")
 
-dataset = pd.read_csv("Dataset_Github_Labeled.csv")
-#addNoise(dataset, 1) #second number for 2^power size i.e. 1->2 times, 2-> 4 times, 3->8 times, takes a while
-x= dataset.drop(['class'], axis=1)
-y= dataset['class']
-for i in range (0,dataset.shape[0]):
-    if y[i].startswith('High-grade'):
-        y[i] = 'High-grade'
-    elif y[i].startswith('Low-grade'):
-        y[i] = 'Low-grade'
-    elif y[i].startswith('Normal'):
-        y[i] = 'Normal'
+def startup():
+    pd.options.display.max_rows = 8
+    pd.options.display.max_columns = 9
+    pd.options.display.float_format = '{:.6f}'.format
+    pd.set_option('mode.chained_assignment', None)
+
+    dataset = pd.read_csv("Dataset_Github_Labeled.csv")
+    #addNoise(dataset, 1) #second number for 2^power size i.e. 1->2 times, 2-> 4 times, 3->8 times, takes a while
+    x= dataset.drop(['class'], axis=1)
+    y= dataset['class']
+    for i in range (0,dataset.shape[0]):
+        if y[i].startswith('High-grade'):
+            y[i] = 'High-grade'
+        elif y[i].startswith('Low-grade'):
+            y[i] = 'Low-grade'
+        elif y[i].startswith('Normal'):
+            y[i] = 'Normal'
+
+    #split into train/test/val
+    x_train, y_train, x_validation, y_validation, x_test, y_test = splitData(dataset)
+    #construct feature columns
+    x_labels = x.head(0)
+    feature_columns=construct_feature_columns(x_labels)
+
+    modelSVM, modelDNN, modelTREE, modelCNN, accuracyCNN, predictionsCNN = trainModels(feature_columns, x_train, y_train,x_test,y_test)
+    ptemp = list(modelDNN.predict(input_fn=lambda: input_fn(features=x_test, labels=y_test, training=False)))
+    predictionsDNN = []
+    for i in range(len(ptemp)):
+        predictionsDNN.append(ptemp[i]["probabilities"])
+    predictionsSVM = modelSVM.predict_proba(x_test) 
+    predictionsTREE = modelTREE.predict_proba(x_test)
+
+    accuracySVM, accuracyDNN, accuracyTREE, accuracyCNN = getAccuracy(x_test, y_test, modelSVM, modelDNN, modelTREE, accuracyCNN)
+    predictionsENS = []
+
+    for i in range(len(predictionsDNN)):
+        tempDNN = predictionsDNN[i]
+        tempCNN = predictionsCNN[i]
+        tempTREE = predictionsTREE[i]
+        tempSVM = predictionsSVM[i]
+        score0 = accuracyDNN*tempDNN[0] + accuracyCNN*tempCNN[0] + accuracyTREE*accuracyTREE*tempTREE[0] + accuracySVM*tempSVM[0]
+        score1 = accuracyDNN*tempDNN[1] + accuracyCNN*tempCNN[1] + accuracyTREE*accuracyTREE*tempTREE[1] + accuracySVM*tempSVM[1]
+        score2 = accuracyDNN*tempDNN[2] + accuracyCNN*tempCNN[2] + accuracyTREE*accuracyTREE*tempTREE[2] + accuracySVM*tempSVM[2]
+        if score0 > score1 and score0 > score2:
+            predictionsENS.append(0)
+        elif score1 > score0 and score1 > score2:
+            predictionsENS.append(1)
+        elif score2 > score0 and score2 > score1:
+            predictionsENS.append(2)
+
+    finalAccuracy = accuracy_score(predictionsENS, y_test)
+    print('DNN:' , accuracyDNN)
+    print('CNN:', accuracyCNN)
+    print('SVM:', accuracySVM)
+    print('TREE: ', accuracyTREE)
+    print('...................')
+    print('ENS:' ,finalAccuracy)
+    print(confusion_matrix(predictionsENS, y_test))
+
+    return accuracyDNN, accuracyCNN, accuracySVM, accuracyTREE
 
 def addNoise(data,powerIN):
     sd = dataset.std(axis=0)
@@ -60,14 +107,14 @@ def splitData(dataset):
     y_validation= lbl_encoder.fit_transform(y_validation)
     return x_train, y_train, x_validation, y_validation, x_test, y_test
 
-# Convert numeric features into Dense Tensors, and construct the feature columns
+    # Convert numeric features into Dense Tensors, and construct the feature columns
 def construct_feature_columns(input_features_DataFrame):
-  tensorSet = ([])
-  for elem in input_features_DataFrame:
-    tensorSet.append( tf.feature_column.numeric_column(str(elem)) )
-  return tensorSet
+    tensorSet = ([])
+    for elem in input_features_DataFrame:
+        tensorSet.append( tf.feature_column.numeric_column(str(elem)) )
+    return tensorSet
 
-# Create the input function for training + evaluation. boolean = True for training.
+    # Create the input function for training + evaluation. boolean = True for training.
 def input_fn(features, labels, training=True, batch_size=32 ):
     dataf = tf.data.Dataset.from_tensor_slices((dict(features), labels))
     if training:
@@ -122,7 +169,7 @@ def trainDNN(feature_columns, x_train, y_train):
         optimizer_adam= tf.compat.v1.train.AdamOptimizer(learning_rate=learning_rate)
     hidden_units=[37,30,19]
     model=tf.estimator.DNNClassifier(hidden_units=hidden_units, feature_columns=feature_columns,  optimizer=optimizer_adam, n_classes=3)
-    model.train(input_fn=lambda: input_fn(features=x_train, labels=y_train, training=True), steps=1000) # originally steps=1000 from template
+    #model.train(input_fn=lambda: input_fn(features=x_train, labels=y_train, training=True), steps=1000) # originally steps=1000 from template
     return model
 
 def trainSVM(x_train, y_train):
@@ -140,49 +187,5 @@ def getAccuracy(x_test, y_test, modelSVM, modelDNN, modelTREE, accuracyCNN):
 
     return accuracySVM, accuracyDNN, accuracyTREE, accuracyCNN
 
-
-#split into train/test/val
-x_train, y_train, x_validation, y_validation, x_test, y_test = splitData(dataset)
-#construct feature columns
-x_labels = x.head(0)
-feature_columns=construct_feature_columns(x_labels)
-
-modelSVM, modelDNN, modelTREE, modelCNN, accuracyCNN, predictionsCNN = trainModels(feature_columns, x_train, y_train,x_test,y_test)
-ptemp = list(modelDNN.predict(input_fn=lambda: input_fn(features=x_test, labels=y_test, training=False)))
-predictionsDNN = []
-for i in range(len(ptemp)):
-    predictionsDNN.append(ptemp[i]["probabilities"])
-predictionsSVM = modelSVM.predict_proba(x_test) 
-predictionsTREE = modelTREE.predict_proba(x_test)
-
-accuracySVM, accuracyDNN, accuracyTREE, accuracyCNN = getAccuracy(x_test, y_test, modelSVM, modelDNN, modelTREE, accuracyCNN)
-
-print(y_train)
-predictionsENS = []
-
-for i in range(len(predictionsDNN)):
-    tempDNN = predictionsDNN[i]
-    tempCNN = predictionsCNN[i]
-    tempTREE = predictionsTREE[i]
-    tempSVM = predictionsSVM[i]
-    score0 = accuracyDNN*tempDNN[0] + accuracyCNN*tempCNN[0] + accuracyTREE*accuracyTREE*tempTREE[0] + accuracySVM*tempSVM[0]
-    score1 = accuracyDNN*tempDNN[1] + accuracyCNN*tempCNN[1] + accuracyTREE*accuracyTREE*tempTREE[1] + accuracySVM*tempSVM[1]
-    score2 = accuracyDNN*tempDNN[2] + accuracyCNN*tempCNN[2] + accuracyTREE*accuracyTREE*tempTREE[2] + accuracySVM*tempSVM[2]
-    if score0 > score1 and score0 > score2:
-        predictionsENS.append(0)
-    elif score1 > score0 and score1 > score2:
-        predictionsENS.append(1)
-    elif score2 > score0 and score2 > score1:
-        predictionsENS.append(2)
-
-
-finalAccuracy = accuracy_score(predictionsENS, y_test)
-print('DNN:' , accuracyDNN)
-print('CNN:', accuracyCNN)
-print('SVM:', accuracySVM)
-print('TREE: ', accuracyTREE)
-print('...................')
-print('ENS:' ,finalAccuracy)
-print(confusion_matrix(predictionsENS, y_test))
 
 
