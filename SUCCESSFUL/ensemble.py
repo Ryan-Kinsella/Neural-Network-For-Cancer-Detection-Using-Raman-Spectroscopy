@@ -18,8 +18,11 @@ from sklearn.metrics import accuracy_score, confusion_matrix
 import warnings
 
 warnings.filterwarnings("ignore")
+x=DataFrame()
+y=DataFrame()
 
 def startup():
+    global x, y
     pd.options.display.max_rows = 8
     pd.options.display.max_columns = 9
     pd.options.display.float_format = '{:.6f}'.format
@@ -188,4 +191,25 @@ def getAccuracy(x_test, y_test, modelSVM, modelDNN, modelTREE, accuracyCNN):
     return accuracySVM, accuracyDNN, accuracyTREE, accuracyCNN
 
 
+def plot_feature_importance():
+    """
+    X: Full set of features from df without the labels
+    y: labels of df
+    Returns: a png top_10_most_important_features with the top 10
+        plotted features. 
+    """
+    global x, y
+    from sklearn import feature_selection as fs
+    fs_fit_fscore = fs.SelectKBest(fs.f_classif, k='all')
+    fs_fit_fscore.fit_transform(x, y)
+    fs_indices_fscore = np.argsort(fs_fit_fscore.scores_)[::-1][0:]
+    best_features_fscore = df.columns[fs_indices_fscore].values
+    feature_importances_fscore = fs_fit_fscore.scores_[fs_indices_fscore]
 
+    from matplotlib import pyplot as plt
+    fig, ax = plt.subplots()
+    ax.bar(best_features_fscore[0:10], feature_importances_fscore[0:10])
+    fig.suptitle('Top 10 Most Important Features', fontsize=20)
+    ax.set_xlabel('Feature Names (0-1367)', fontsize='medium')
+    ax.set_ylabel('Feature Importance (F-score)', fontsize='medium') 
+    plt.savefig('top_10_most_important_features.png')
