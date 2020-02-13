@@ -210,7 +210,7 @@ def plot_feature_importance():
     from matplotlib import pyplot as plt
     fig, ax = plt.subplots()
     ax.bar(best_features_fscore[0:10], feature_importances_fscore[0:10])
-    fig.suptitle('Top 10 Most Important Features', fontsize=20)
+    fig.suptitle("", fontsize=20)
     ax.set_xlabel('Feature Names (0-1367)', fontsize='medium')
     ax.set_ylabel('Feature Importance (F-score)', fontsize='medium') 
     plt.savefig('top_10_most_important_features.png')

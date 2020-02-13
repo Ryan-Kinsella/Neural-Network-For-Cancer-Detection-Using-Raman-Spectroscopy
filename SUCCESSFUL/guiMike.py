@@ -1,13 +1,8 @@
 import ensemble
-from tkinter import *
-import PIL
-from PIL import ImageTk, Image
+from tkinter import *   
 import os
 
 accuracyDNN, accuracyCNN, accuracySVM, accuracyTREE, predictionsENS, predictionsDNN, predictionsCNN, predictionsSVM, predictionsTREE, predictionsEXP = ensemble.startup()
-ensemble.plot_feature_importance()
-
-print(predictionsENS[0])
 sampleNum = 0
 
 def getStats(count,accuracyDNN, accuracyCNN, accuracySVM, accuracyTREE, predictionsENS, predictionsDNN, predictionsCNN, predictionsSVM, predictionsTREE, predictionsEXP):
@@ -53,14 +48,14 @@ def getStats(count,accuracyDNN, accuracyCNN, accuracySVM, accuracyTREE, predicti
         EXPprediction+= "Medium"
     elif predictionsEXP[count] == 2:
         EXPprediction+= "High"
-    DNNacc = "Accuracy: " + ((str(accuracyDNN))[:5]) + "%"
-    CNNacc = "Accuracy: " +((str(accuracyCNN))[:5]) + "%"
-    TREEacc = "Accuracy: " +((str(accuracyTREE))[:5])+ "%"
-    SVMacc = "Accuracy: " +((str(accuracySVM))[:5])+ "%"
-    DNNconf = "Confidence: " + (str(max(predictionsDNN[count]))[:5]) + "%"
-    CNNconf = "Confidence: " + (str(max(predictionsCNN[count]))[:5]) + "%"
-    SVMconf = "Confidence: " + (str(max(predictionsSVM[count]))[:5]) + "%"
-    TREEconf = "Confidence: " + (str(max(predictionsTREE[count]))[:5]) +"%"
+    DNNacc = "Accuracy: " + ((str(accuracyDNN*100))[:5]) + "%"
+    CNNacc = "Accuracy: " +((str(accuracyCNN*100))[:5]) + "%"
+    TREEacc = "Accuracy: " +((str(accuracyTREE*100))[:5])+ "%"
+    SVMacc = "Accuracy: " +((str(accuracySVM*100))[:5])+ "%"
+    DNNconf = "Confidence: " + (str(max(predictionsDNN[count])*100)[:5]) + "%"
+    CNNconf = "Confidence: " + (str(max(predictionsCNN[count])*100)[:5]) + "%"
+    SVMconf = "Confidence: " + (str(max(predictionsSVM[count])*100)[:5]) + "%"
+    TREEconf = "Confidence: " + (str(max(predictionsTREE[count])*100)[:5]) +"%"
     sampleName = "Sample #" + str(sampleNum+1)
     return ENSprediction, DNNprediction, CNNprediction, TREEprediction, SVMprediction, DNNacc, CNNacc, TREEacc, SVMacc, DNNconf, CNNconf,SVMconf, TREEconf, EXPprediction, sampleName
 
@@ -101,6 +96,9 @@ def callback(event):
     w.itemconfig(TREEconfText, text= str(TREEconf))
     w.itemconfig(SVMconfText, text= str(SVMconf))
 
+    img1 = ImageTk.PhotoImage(Image.open("graph" + str(sampleNum) + ".png").resize((244,195)))
+    w.create_image(0,305,anchor = NW, image = img1)
+
     if predictionsEXP[sampleNum] != predictionsENS[sampleNum]:
         w.itemconfig(correctBox, fill= "pink")  
     else:
@@ -114,13 +112,14 @@ sampleNum = 1
 w = Canvas(master, width=500, height=500)
 w.bind("<Button-1>", callback)
 w.pack()
+w.create_rectangle(0,0,500,500, fill = "white")
 w.create_rectangle(55,2, 445, 50, fill = "grey") 
 w.create_line(0,50,500,50,width = 3) 
 titleText = w.create_text(250,25, text="Sample #" + str(sampleNum))
 w.create_line(0,275,500,275,width = 3)
 w.create_line(250,275,250,500, width = 3)
 w.create_text(125,290, text="Spectra:")
-w.create_text(375,290, text="Key Features:")
+w.create_text(375,290, text="Top 10 Most Important Features:")
 correctBox = w.create_rectangle(0,225, 500, 275, fill = "#98FB98")  
 ENSpredictionText = w.create_text(125,250, text = ENSprediction)
 EXPpredictionText = w.create_text(375,250, text = EXPprediction)
@@ -159,10 +158,12 @@ TREEpredictionText = w.create_text(437,100, text = TREEprediction)
 TREEaccText = w.create_text(437,135, text = TREEacc)
 TREEconfText = w.create_text(437,170, text = TREEconf)
 
-img1 = ImageTk.PhotoImage(Image.open("doggie.png").resize((244, 195)))
-img2 = ImageTk.PhotoImage(Image.open("cathat.png").resize((247, 195)))
+from PIL import ImageTk, Image
 
-w.create_image(0,305,anchor = NW, image = img1)
+img1 = ImageTk.PhotoImage(Image.open("graph0.png").resize((244, 195)))
+img2 = ImageTk.PhotoImage(Image.open("featureChart.png").resize((247, 195)))
+
+image1 = w.create_image(0,305,anchor = NW, image = img1)
 w.create_image(256,305, anchor = NW, image = img2)
 
 mainloop()
