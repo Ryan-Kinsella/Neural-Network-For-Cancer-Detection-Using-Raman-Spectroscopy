@@ -6,9 +6,10 @@ import os
 from tkinter import *
 
 accuracyDNN, accuracyCNN, accuracySVM, accuracyTREE, predictionsENS, predictionsDNN, predictionsCNN, predictionsSVM, predictionsTREE, predictionsEXP = ensemble.startup()
+ensemble.plot_feature_importance()
 
 print(predictionsENS[0])
-count = 0
+sampleNum = 0
 
 def getStats(count,accuracyDNN, accuracyCNN, accuracySVM, accuracyTREE, predictionsENS, predictionsDNN, predictionsCNN, predictionsSVM, predictionsTREE, predictionsEXP):
     DNNprediction = "Prediction: "
@@ -61,10 +62,10 @@ def getStats(count,accuracyDNN, accuracyCNN, accuracySVM, accuracyTREE, predicti
     CNNconf = "Confidence: " + (str(max(predictionsCNN[count]))[:5]) + "%"
     SVMconf = "Confidence: " + (str(max(predictionsSVM[count]))[:5]) + "%"
     TREEconf = "Confidence: " + (str(max(predictionsTREE[count]))[:5]) +"%"
-    sampleName = "Sample #" + str(count+1)
+    sampleName = "Sample #" + str(sampleNum+1)
     return ENSprediction, DNNprediction, CNNprediction, TREEprediction, SVMprediction, DNNacc, CNNacc, TREEacc, SVMacc, DNNconf, CNNconf,SVMconf, TREEconf, EXPprediction, sampleName
 
-ENSprediction, DNNprediction, CNNprediction, TREEprediction, SVMprediction, DNNacc, CNNacc, TREEacc, SVMacc, DNNconf, CNNconf,SVMconf, TREEconf, EXPprediction, sampleName = getStats(count, accuracyDNN, accuracyCNN, accuracySVM, accuracyTREE, predictionsENS, predictionsDNN, predictionsCNN, predictionsSVM, predictionsTREE, predictionsEXP)
+ENSprediction, DNNprediction, CNNprediction, TREEprediction, SVMprediction, DNNacc, CNNacc, TREEacc, SVMacc, DNNconf, CNNconf,SVMconf, TREEconf, EXPprediction, sampleName = getStats(sampleNum, accuracyDNN, accuracyCNN, accuracySVM, accuracyTREE, predictionsENS, predictionsDNN, predictionsCNN, predictionsSVM, predictionsTREE, predictionsEXP)
 
 
 def callback(event):
@@ -91,7 +92,7 @@ w.create_line(0,275,500,275,width = 3)
 w.create_line(250,275,250,500, width = 3)
 w.create_text(125,290, text="Spectra:")
 w.create_text(375,290, text="Key Features:")
-if predictionsENS[count] == predictionsEXP[count]:
+if predictionsENS[sampleNum] == predictionsEXP[sampleNum]:
     w.create_rectangle(0,225, 500, 275, fill = "#98FB98")  
 else:
     w.create_rectangle(0,225, 500, 275, fill = "pink")  
@@ -131,18 +132,5 @@ w.create_text(437,65, text = "TREE:")
 w.create_text(437,100, text = TREEprediction)
 w.create_text(437,135, text = TREEacc)
 w.create_text(437,170, text = TREEconf)
-
-
-# img1 = ImageTk.PhotoImage(Image.open("doggie.png").resize((244, 195)))
-# img2 = ImageTk.PhotoImage(Image.open("cathat.png").resize((247, 195)))
-
-# w.create_image(0,305,anchor = NW, image = img1)
-# w.create_image(256,305, anchor = NW, image = img2)
-
-img1 = ImageTk.PhotoImage(Image.open("doggie.png").resize((244, 195)))
-img2 = ImageTk.PhotoImage(Image.open("cathat.png").resize((247, 195)))
-
-w.create_image(0,305,anchor = NW, image = img1)
-w.create_image(256,305, anchor = NW, image = img2)
 
 mainloop()

@@ -20,9 +20,10 @@ import warnings
 warnings.filterwarnings("ignore")
 x=pd.DataFrame()
 y=pd.DataFrame()
+dataset=pd.DataFrame()
 
 def startup():
-    global x, y
+    global x, y, dataset
     pd.options.display.max_rows = 8
     pd.options.display.max_columns = 9
     pd.options.display.float_format = '{:.6f}'.format
@@ -198,12 +199,12 @@ def plot_feature_importance():
     Returns: a png top_10_most_important_features with the top 10
         plotted features. 
     """
-    global x, y
+    global x, y, dataset
     from sklearn import feature_selection as fs
     fs_fit_fscore = fs.SelectKBest(fs.f_classif, k='all')
     fs_fit_fscore.fit_transform(x, y)
     fs_indices_fscore = np.argsort(fs_fit_fscore.scores_)[::-1][0:]
-    best_features_fscore = df.columns[fs_indices_fscore].values
+    best_features_fscore = dataset.columns[fs_indices_fscore].values
     feature_importances_fscore = fs_fit_fscore.scores_[fs_indices_fscore]
 
     from matplotlib import pyplot as plt
