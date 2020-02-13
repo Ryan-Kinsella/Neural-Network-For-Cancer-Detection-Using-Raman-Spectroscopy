@@ -67,14 +67,26 @@ def getStats(count,accuracyDNN, accuracyCNN, accuracySVM, accuracyTREE, predicti
 ENSprediction, DNNprediction, CNNprediction, TREEprediction, SVMprediction, DNNacc, CNNacc, TREEacc, SVMacc, DNNconf, CNNconf,SVMconf, TREEconf, EXPprediction, sampleName = getStats(count, accuracyDNN, accuracyCNN, accuracySVM, accuracyTREE, predictionsENS, predictionsDNN, predictionsCNN, predictionsSVM, predictionsTREE, predictionsEXP)
 
 
+def callback(event):
+    global sampleNum
+
+    if (event.x >= 445 and event.x <= 500 and event.y >= 0 and event.y <= 50):
+        sampleNum = sampleNum + 1
+        w.itemconfig(titleText, text="Sample #" + str(sampleNum))
+    if (event.x >= 0 and event.x <= 50 and event.y >= 0 and event.y <= 50):
+        sampleNum = sampleNum - 1
+        w.itemconfig(titleText, text="Sample #" + str(sampleNum))
 
 master = Tk()
 
+sampleNum = 1
 
 w = Canvas(master, width=500, height=500)
+w.bind("<Button-1>", callback)
 w.pack()
-w.create_rectangle(0,2, 500, 50, fill = "grey")  
-w.create_text(250,25, text=sampleName)
+w.create_rectangle(55,2, 445, 50, fill = "grey") 
+w.create_line(0,50,500,50,width = 3) 
+titleText = w.create_text(250,25, text="Sample #" + str(sampleNum))
 w.create_line(0,275,500,275,width = 3)
 w.create_line(250,275,250,500, width = 3)
 w.create_text(125,290, text="Spectra:")
@@ -90,6 +102,13 @@ w.create_line(250,50,250,225, width = 3)
 w.create_line(375,50,375,225, width = 3)
 w.create_line(0,225,500,225, width = 3)
 
+#arrow left
+w.create_line(15, 25, 40, 10, width = 3)
+w.create_line(15, 25, 40, 40, width = 3)
+
+#arrow right
+w.create_line(460, 10, 485, 25, width = 3)
+w.create_line(460, 40, 485, 25, width = 3)
 
 w.create_text(62,65, text = "DNN:")
 w.create_text(62,100, text = DNNprediction)
@@ -119,5 +138,11 @@ w.create_text(437,170, text = TREEconf)
 
 # w.create_image(0,305,anchor = NW, image = img1)
 # w.create_image(256,305, anchor = NW, image = img2)
+
+img1 = ImageTk.PhotoImage(Image.open("doggie.png").resize((244, 195)))
+img2 = ImageTk.PhotoImage(Image.open("cathat.png").resize((247, 195)))
+
+w.create_image(0,305,anchor = NW, image = img1)
+w.create_image(256,305, anchor = NW, image = img2)
 
 mainloop()
