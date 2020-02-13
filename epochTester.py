@@ -1,3 +1,11 @@
+
+
+#vizualize model training history in Keras
+#create plot form collected history data
+#collects history, returned from training models and creates 2 charts:
+#1. plot of accuracy on training and validation datasets over trainging epochs
+#2. plot of loss of training and validation datasets over trainging epochs
+
 # Visualize training history
 from keras.models import Sequential
 from keras.layers import Dense

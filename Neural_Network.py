@@ -1,3 +1,4 @@
+
 """
 Neural network for the detection of cancerous tissues using raman spectroscopy.
 Using data set "Dataset_Github_csv.csv", taken from paper
@@ -214,7 +215,7 @@ model = tf.compat.v2.estimator.DNNClassifier(
 # Format in which the estimator evaluates the performance of the model.
 batch_size = 5
 #estimator.train(input_fn=input_fn_train_and_eval(features = training_features, targets= training_targets,batch_size=batch_size,shuffle=True,num_epochs=None))
-model.train(input_fn=lambda : input_fn_train(training_features, 'High-grade tumor-1')) # High-grade tumor-1 is the string label for class
+model.train(input_fn=lambda : input_fn_train(training_features, 'High-grade')) # High-grade tumor-1 is the string label for class
 #metrics = estimator.evaluate(input_fn=input_fn_train_and_eval(         ))
 #predictions = estimator.predict(input_fn=input_fn_predict)
 
