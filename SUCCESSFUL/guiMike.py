@@ -10,42 +10,42 @@ def getStats(count,accuracyDNN, accuracyCNN, accuracySVM, accuracyTREE, predicti
     if predictionsDNN[count][0] >= predictionsDNN[count][1] and predictionsDNN[count][0]>=predictionsDNN[count][2]:
         DNNprediction+= "Healthy"
     elif predictionsDNN[count][1] >= predictionsDNN[count][0] and predictionsDNN[count][1]>=predictionsDNN[count][2]:
-        DNNprediction+= "Medium"
+        DNNprediction+= "Low"
     elif predictionsDNN[count][2] >= predictionsDNN[count][0] and predictionsDNN[count][2]>=predictionsDNN[count][1]:
         DNNprediction+= "High"
     CNNprediction = "Prediction: "
     if predictionsCNN[count][0] >= predictionsCNN[count][1] and predictionsCNN[count][0]>=predictionsCNN[count][2]:
         CNNprediction+= "Healthy"
     elif predictionsCNN[count][1] >= predictionsCNN[count][0] and predictionsCNN[count][1]>=predictionsCNN[count][2]:
-        CNNprediction+= "Medium"
+        CNNprediction+= "Low"
     elif predictionsCNN[count][2] >= predictionsCNN[count][0] and predictionsCNN[count][2]>=predictionsCNN[count][1]:
         CNNprediction+= "High"
     TREEprediction = "Prediction: " 
     if predictionsTREE[count][0] >= predictionsTREE[count][1] and predictionsTREE[count][0]>=predictionsTREE[count][2]:
         TREEprediction+= "Healthy"
     elif predictionsTREE[count][1] >= predictionsTREE[count][0] and predictionsTREE[count][1]>=predictionsTREE[count][2]:
-        TREEprediction+= "Medium"
+        TREEprediction+= "Low"
     elif predictionsTREE[count][2] >= predictionsTREE[count][0] and predictionsTREE[count][2]>=predictionsTREE[count][1]:
         TREEprediction+= "High"
     SVMprediction = "Prediction: "
     if predictionsSVM[count][0] >= predictionsSVM[count][1] and predictionsSVM[count][0]>=predictionsSVM[count][2]:
         SVMprediction+= "Healthy"
     elif predictionsSVM[count][1] >= predictionsSVM[count][0] and predictionsSVM[count][1]>=predictionsSVM[count][2]:
-        SVMprediction+= "Medium"
+        SVMprediction+= "Low"
     elif predictionsSVM[count][2] >= predictionsSVM[count][0] and predictionsSVM[count][2]>=predictionsSVM[count][1]:
         SVMprediction+= "High"
     ENSprediction = "Ensemble Prediction: "
     if predictionsENS[count] == 0:
         ENSprediction+= "Healthy"
     elif predictionsENS[count] == 1:
-        ENSprediction+= "Medium"
+        ENSprediction+= "Low"
     elif predictionsENS[count] == 2:
         ENSprediction+= "High"
     EXPprediction = "Actual: "
     if predictionsEXP[count] == 0:
         EXPprediction+= "Healthy"
     elif predictionsEXP[count] == 1:
-        EXPprediction+= "Medium"
+        EXPprediction+= "Low"
     elif predictionsEXP[count] == 2:
         EXPprediction+= "High"
     DNNacc = "Accuracy: " + ((str(accuracyDNN*100))[:5]) + "%"

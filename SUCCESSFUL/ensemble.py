@@ -173,7 +173,7 @@ def trainDNN(feature_columns, x_train, y_train):
         optimizer_adam= tf.compat.v1.train.AdamOptimizer(learning_rate=learning_rate)
     hidden_units=[37,30,19]
     model=tf.estimator.DNNClassifier(hidden_units=hidden_units, feature_columns=feature_columns,  optimizer=optimizer_adam, n_classes=3)
-    #model.train(input_fn=lambda: input_fn(features=x_train, labels=y_train, training=True), steps=1000) # originally steps=1000 from template
+    model.train(input_fn=lambda: input_fn(features=x_train, labels=y_train, training=True), steps=1000) # originally steps=1000 from template
     return model
 
 def trainSVM(x_train, y_train):
